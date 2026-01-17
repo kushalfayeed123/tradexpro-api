@@ -56,7 +56,7 @@ export class UsersController {
       ...user,
       wallet: {
         id: walletAccount?.id ?? null,
-        currency: walletAccount?.currency ?? 'NGN',
+        currency: walletAccount?.currency ?? 'USD',
         balance: walletBalance?.balance ?? 0,
       },
     };

@@ -4,12 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // src/transactions/transactions.service.ts
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { LedgerService } from 'src/ledger/ledger.service';
 
@@ -21,13 +16,13 @@ export class TransactionsService {
   ) {}
 
   async create(userId: string, dto: CreateTransactionDto) {
-    const { data: wallet } = await this.supabase
-      .from('wallets')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
+    // const { data: wallet } = await this.supabase
+    //   .from('wallets')
+    //   .select('id')
+    //   .eq('user_id', userId)
+    //   .single();
 
-    if (!wallet) throw new NotFoundException('Wallet not found');
+    // if (!wallet) throw new NotFoundException('Wallet not found');
 
     const { data: existing } = await this.supabase
       .from('transactions')
@@ -42,7 +37,7 @@ export class TransactionsService {
     const { data, error } = await this.supabase
       .from('transactions')
       .insert({
-        wallet_id: wallet.id,
+        wallet_id: dto.wallet_id,
         amount: dto.amount,
         type: dto.type,
         reference: dto.reference,
@@ -60,9 +55,9 @@ export class TransactionsService {
 
   async list(userId: string) {
     const { data: wallet } = await this.supabase
-      .from('wallets')
+      .from('ledger_accounts')
       .select('id')
-      .eq('user_id', userId)
+      .eq('owner_id', userId)
       .single();
 
     return this.supabase

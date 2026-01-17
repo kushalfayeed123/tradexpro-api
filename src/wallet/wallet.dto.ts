@@ -3,6 +3,6 @@ import { IsIn, IsString } from 'class-validator';
 
 export class CreateWalletDto {
   @IsString()
-  @IsIn(['NGN', 'USD', 'EUR'])
+  @IsIn(['USD', 'EUR'])
   currency!: string;
 }

@@ -60,19 +60,19 @@ export class AuthService {
       throw new InternalServerErrorException('Failed to create user profile');
     }
 
-    const { error: walletError } = await this.supabase.from('wallets').insert({
-      user_id: data.user.id,
-      currency: 'USD',
-    });
+    // const { error: walletError } = await this.supabase.from('wallets').insert({
+    //   user_id: data.user.id,
+    //   currency: 'USD',
+    // });
 
-    if (walletError) {
-      // rollback everything
-      await this.supabase.from('profile').delete().eq('user_id', userId);
-      await this.supabase.from('users').delete().eq('id', userId);
-      await this.supabase.auth.admin.deleteUser(userId);
+    // if (walletError) {
+    //   // rollback everything
+    //   await this.supabase.from('profile').delete().eq('user_id', userId);
+    //   await this.supabase.from('users').delete().eq('id', userId);
+    //   await this.supabase.auth.admin.deleteUser(userId);
 
-      throw new InternalServerErrorException('Failed to create user wallet');
-    }
+    //   throw new InternalServerErrorException('Failed to create user wallet');
+    // }
 
     await this.supabase.from('ledger_accounts').insert({
       owner_type: 'user',
