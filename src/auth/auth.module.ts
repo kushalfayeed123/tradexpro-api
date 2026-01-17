@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { SupabaseModule } from '../supabase/supabase.module';
+import { AdminGuard } from './guards/admin.guard';
+import { LedgerService } from 'src/ledger/ledger.service';
 
 @Module({
   imports: [
@@ -13,7 +15,7 @@ import { SupabaseModule } from '../supabase/supabase.module';
     SupabaseModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, AdminGuard, LedgerService],
   exports: [PassportModule, JwtStrategy],
 })
 export class AuthModule {}

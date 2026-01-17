@@ -3,6 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './user/users.module';
 import { ProfilesModule } from './profile/profiles.module';
+import { WalletsModule } from './wallet/wallet.module';
+import { TransactionsModule } from './transactions/transactions.module';
+import { AdminModule } from './admin/admin.module';
+import { LedgerModule } from './ledger/ledger.module';
 
 @Module({
   imports: [
@@ -10,6 +14,10 @@ import { ProfilesModule } from './profile/profiles.module';
     AuthModule,
     UsersModule,
     ProfilesModule,
+    WalletsModule,
+    TransactionsModule,
+    AdminModule,
+    LedgerModule,
   ],
 })
 export class AppModule {}
