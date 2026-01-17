@@ -7,6 +7,8 @@ import { WalletsModule } from './wallet/wallet.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { AdminModule } from './admin/admin.module';
 import { LedgerModule } from './ledger/ledger.module';
+import { InvestmentPlansModule } from './investment-plans/investment-plans.module';
+import { InvestmentsModule } from './investments/investments.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { LedgerModule } from './ledger/ledger.module';
     TransactionsModule,
     AdminModule,
     LedgerModule,
+    InvestmentPlansModule,
+    InvestmentsModule,
   ],
 })
 export class AppModule {}
