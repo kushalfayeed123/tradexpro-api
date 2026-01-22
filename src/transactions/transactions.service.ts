@@ -7,6 +7,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { LedgerService } from 'src/ledger/ledger.service';
+import { getPaginationRange } from 'src/pagination.helper';
 
 @Injectable()
 export class TransactionsService {
@@ -191,22 +192,53 @@ export class TransactionsService {
     return { status: 'reversed' };
   }
 
-  async getAllTransactions() {
-    const { data, error } = await this.supabase
-      .from('transactions')
-      .select(
-        `
-        id,
-        amount,
-        type,
-        status,
-        created_at,
-        user:profiles(id, email, full_name)
-      `,
+  // transactions.service.ts
+  async getAllTransactions(query: any) {
+    const { page = 1, limit = 20, type, status, search } = query;
+    const { from, to } = getPaginationRange(page, limit);
+
+    let qb = this.supabase.from('transactions').select(
+      `
+      *,
+      investor:users!transactions_created_by_fkey (
+        id, 
+        email, 
+        profile:profiles (first_name, last_name)
       )
-      .order('created_at', { ascending: false });
+    `,
+      { count: 'exact' },
+    );
+
+    if (type && type !== 'all') qb = qb.eq('type', type);
+    if (status && status !== 'all') qb = qb.eq('status', status);
+    if (search) qb = qb.ilike('reference', `%${search}%`);
+
+    const { data, error, count } = await qb
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (error) throw new BadRequestException(error.message);
-    return data;
+
+    const formattedData = data.map((trx) => ({
+      ...trx,
+      user: trx.investor?.profile
+        ? `${trx.investor.profile.first_name} ${trx.investor.profile.last_name}`
+        : 'System',
+      method: trx.description || '',
+      date: new Date(trx.created_at).toLocaleDateString(),
+    }));
+
+    return { data: formattedData, meta: { total: count, page, limit } };
+  }
+
+  async getStats() {
+    const { data, error } = await this.supabase.rpc('get_ledger_stats');
+
+    if (error) {
+      console.error('Error fetching stats:', error);
+      return { totalVolume: 0, pendingApprovals: 0, failedLast7Days: 0 };
+    }
+
+    return data; // Returns the JSON object directly
   }
 }
