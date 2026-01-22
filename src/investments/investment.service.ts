@@ -303,4 +303,23 @@ export class InvestmentsService {
       investment: data,
     };
   }
+
+  async getAllInvestments() {
+    const { data, error } = await this.supabase
+      .from('investments')
+      .select(
+        `
+        id,
+        amount,
+        status,
+        created_at,
+        user:profiles(id, email),
+        plan:investment_plans(name, roi, duration_days)
+      `,
+      )
+      .order('created_at', { ascending: false });
+
+    if (error) throw new BadRequestException(error.message);
+    return data;
+  }
 }

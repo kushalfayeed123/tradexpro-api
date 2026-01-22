@@ -16,14 +16,6 @@ export class TransactionsService {
   ) {}
 
   async create(userId: string, dto: CreateTransactionDto) {
-    // const { data: wallet } = await this.supabase
-    //   .from('wallets')
-    //   .select('id')
-    //   .eq('user_id', userId)
-    //   .single();
-
-    // if (!wallet) throw new NotFoundException('Wallet not found');
-
     const { data: existing } = await this.supabase
       .from('transactions')
       .select('id')
@@ -197,5 +189,24 @@ export class TransactionsService {
     }
 
     return { status: 'reversed' };
+  }
+
+  async getAllTransactions() {
+    const { data, error } = await this.supabase
+      .from('transactions')
+      .select(
+        `
+        id,
+        amount,
+        type,
+        status,
+        created_at,
+        user:profiles(id, email, full_name)
+      `,
+      )
+      .order('created_at', { ascending: false });
+
+    if (error) throw new BadRequestException(error.message);
+    return data;
   }
 }

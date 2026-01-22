@@ -90,4 +90,10 @@ export class KycController {
   async myKyc(@Req() req: any) {
     return this.kycService.getUserKyc(req.user.id);
   }
+
+  @UseGuards(AdminGuard)
+  @Get(':id')
+  async getUserKycRecord(@Req() req: any, @Param('id') id: string) {
+    return this.kycService.getUserKyc(id);
+  }
 }

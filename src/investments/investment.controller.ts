@@ -23,34 +23,38 @@ import { KycGuard } from 'src/kyc/guards/kyc.guard';
 export class InvestmentsController {
   constructor(private readonly service: InvestmentsService) {}
 
-  @UseGuards(JwtAuthGuard, KycGuard)
+  @UseGuards(KycGuard)
   @RequireKyc(1)
   @Post()
   create(@Req() req: any, @Body() dto: CreateInvestmentDto) {
     return this.service.create(req.user.id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   findUserInvestments(@Req() req: any) {
     return this.service.findUserInvestments(req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  @UseGuards(AdminGuard)
   @Post(':id/mature')
   matureInvestment(@Param('id') id: string, @Req() req: any) {
     return this.service.matureInvestment(req.user.id, id);
   }
 
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  @UseGuards(AdminGuard)
   @Patch('return')
   updateAccruedReturn(@Body() dto: UpdateAccruedReturnDto) {
     return this.service.updateAccruedReturn(dto);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('me')
+  getAll() {
+    return this.service.getAllInvestments();
   }
 }

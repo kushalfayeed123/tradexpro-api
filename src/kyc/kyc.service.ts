@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -156,5 +155,25 @@ export class KycService {
 
     if (kyc.level < requiredLevel)
       throw new ForbiddenException(`KYC level ${requiredLevel} required`);
+  }
+
+  async listAllKyc() {
+    const { data, error } = await this.supabase
+      .from('kyc_records')
+      .select('*, documents:kyc_documents(*)')
+      .order('created_at', { ascending: false });
+    return { data, error };
+  }
+
+  // Get a single KYC submission
+  async getKycById(kycId: string) {
+    const { data, error } = await this.supabase
+      .from('kyc_records')
+      .select('*, documents:kyc_documents(*)')
+      .eq('id', kycId)
+      .maybeSingle();
+
+    if (error || !data) throw new BadRequestException('KYC not found');
+    return data;
   }
 }
