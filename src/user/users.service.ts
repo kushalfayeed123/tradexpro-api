@@ -33,8 +33,10 @@ export class UsersService {
 
     if (email) qb = qb.ilike('email', `%${email}%`);
     if (role) qb = qb.eq('role', role);
-    if (kyc_status) qb = qb.eq('kyc_records.status', kyc_status);
-
+    if (kyc_status && kyc_status !== 'all') {
+      // This tells Supabase to filter the top-level 'users' based on a column in 'kyc_records'
+      qb = qb.filter('kyc.status', 'eq', kyc_status);
+    }
     const {
       data: users,
       error: userError,
