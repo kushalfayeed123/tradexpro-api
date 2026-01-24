@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsOptional, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  Min,
+  Max,
+  IsEnum,
+} from 'class-validator';
 
 export class CreatePlanDto {
   @IsString()
@@ -24,4 +31,10 @@ export class CreatePlanDto {
   @Min(0)
   @Max(1)
   interest_rate!: number;
+
+  @IsOptional()
+  @IsEnum(['active', 'inactive'], {
+    message: 'Status must be either active or inactive',
+  })
+  status?: string;
 }

@@ -304,22 +304,47 @@ export class InvestmentsService {
     };
   }
 
-  async getAllInvestments() {
-    const { data, error } = await this.supabase
-      .from('investments')
-      .select(
-        `
-        id,
-        amount,
-        status,
-        created_at,
-        user:profiles(id, email),
-        plan:investment_plans(name, roi, duration_days)
-      `,
-      )
-      .order('created_at', { ascending: false });
+  async getAllInvestments(
+    page: number = 1,
+    limit: number = 10,
+    status?: string,
+  ) {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = this.supabase.from('investments').select(
+      `
+      id,
+      principal,
+      accrued_return,
+      status,
+      start_date,
+      end_date,
+      created_at,
+      user:users(id, email),
+      plan:investment_plans(name, interest_rate, duration_days)
+    `,
+      { count: 'exact' }, // Get total count for pagination meta
+    );
+
+    // Apply filtering if status is provided and not 'all'
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
+    }
+
+    const { data, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (error) throw new BadRequestException(error.message);
-    return data;
+
+    return {
+      data,
+      meta: {
+        total: count,
+        page,
+        last_page: Math.ceil((count || 0) / limit),
+      },
+    };
   }
 }

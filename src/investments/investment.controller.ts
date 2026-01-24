@@ -9,6 +9,7 @@ import {
   Req,
   UseGuards,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
@@ -53,8 +54,12 @@ export class InvestmentsController {
   }
 
   @UseGuards(AdminGuard)
-  @Get('me')
-  getAll() {
-    return this.service.getAllInvestments();
+  @Get()
+  getAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('status') status?: string,
+  ) {
+    return this.service.getAllInvestments(Number(page), Number(limit), status);
   }
 }

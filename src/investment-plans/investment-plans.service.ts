@@ -70,7 +70,7 @@ export class InvestmentPlansService {
     const { data, error } = await this.supabase
       .from('investment_plans')
       .select('*')
-      .eq('status', 'active');
+      .order('created_at', { ascending: true }); // earliest plans first;
     if (error) throw new BadRequestException(error.message);
     return data;
   }
