@@ -59,13 +59,9 @@ export class InvestmentPlansService {
     };
   }
   async update(id: string, dto: UpdatePlanDto) {
-    // 1. Convert the class instance to a plain object and remove undefined values
-    const updateData = JSON.parse(JSON.stringify(dto));
-
-    // 2. Perform the update
     const { data, error } = await this.supabase
       .from('investment_plans')
-      .update(updateData)
+      .update(dto)
       .eq('id', id)
       .select()
       .maybeSingle();
