@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { CreatePlanDto } from './dtos/create-plan.dto';
@@ -54,15 +58,29 @@ export class InvestmentPlansService {
       ledger_account_id: ledgerAccount.id,
     };
   }
-
   async update(id: string, dto: UpdatePlanDto) {
+    // 1. Convert the class instance to a plain object and remove undefined values
+    const updateData = JSON.parse(JSON.stringify(dto));
+
+    // 2. Perform the update
     const { data, error } = await this.supabase
       .from('investment_plans')
-      .update(dto)
+      .update(updateData)
       .eq('id', id)
       .select()
       .maybeSingle();
-    if (error) throw new BadRequestException(error.message);
+
+    if (error) {
+      // Check if the error is a constraint violation (e.g., min_amount > max_amount)
+      throw new BadRequestException(`Update failed: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new NotFoundException(
+        `Plan with ID ${id} not found or no changes made`,
+      );
+    }
+
     return data;
   }
 

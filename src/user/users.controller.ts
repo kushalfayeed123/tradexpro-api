@@ -35,7 +35,7 @@ export class UsersController {
       .from('users')
       .select(
         `
-        id, email, role, created_at,
+        id, email, role, created_at, is_verified,
         profile:profiles (first_name, last_name, phone, country)
     `,
       )
