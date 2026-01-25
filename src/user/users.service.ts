@@ -14,7 +14,7 @@ export class UsersService {
    * Get all users (basic info)
    */
   async getAllUsers(query: any) {
-    const { page = 1, limit = 20, email, role, kyc_status } = query;
+    const { page = 1, limit = 20, email, role } = query;
     const { from, to } = getPaginationRange(page, limit);
 
     // 1. Primary Fetch: Users, Profiles, and KYC
@@ -42,9 +42,9 @@ export class UsersService {
 
     if (email) qb = qb.ilike('email', `%${email}%`);
     if (role) qb = qb.eq('role', role);
-    if (kyc_status && kyc_status !== 'all') {
-      qb = qb.filter('kyc.status', 'eq', kyc_status);
-    }
+    // if (kyc_status && kyc_status !== 'all') {
+    //   qb = qb.filter('kyc.status', 'eq', kyc_status);
+    // }
 
     const {
       data: users,
@@ -68,7 +68,8 @@ export class UsersService {
 
     // 3. Format and Merge
     const formattedData = users.map((user) => {
-      const kycData = Array.isArray(user.kyc) ? user.kyc[0] : user.kyc;
+      const rawKyc = Array.isArray(user.kyc) ? user.kyc[0] : user.kyc;
+      const kycData = rawKyc || { status: 'none', level: 0 };
       const profileData = Array.isArray(user.profile)
         ? user.profile[0]
         : user.profile;
