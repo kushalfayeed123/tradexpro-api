@@ -12,6 +12,7 @@ import { InvestmentsModule } from './investments/investments.module';
 import { KycModule } from './kyc/kyc.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsModule } from './notifications/notification.module';
+import { InvestmentOverviewModule } from './investment-overview/investment-overview.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { NotificationsModule } from './notifications/notification.module';
     KycModule,
     ScheduleModule.forRoot(),
     NotificationsModule,
+    InvestmentOverviewModule,
   ],
 })
 export class AppModule {}

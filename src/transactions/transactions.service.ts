@@ -35,6 +35,13 @@ export class TransactionsService {
         type: dto.type,
         reference: dto.reference,
         description: dto.description,
+        // Metadata columns
+        sender_address: dto.sender_address,
+        beneficiary_address: dto.beneficiary_address,
+        txn_hash: dto.txn_hash,
+        payment_method: dto.payment_method,
+        receipt_url: dto.receipt_url,
+        // Status and Ownership
         created_by: userId,
         status: 'pending',
       })

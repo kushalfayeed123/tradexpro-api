@@ -1,5 +1,10 @@
-// src/transactions/dto/create-transaction.dto.ts
-import { IsEnum, IsNumber, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsString,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 export enum TransactionType {
   DEPOSIT = 'deposit',
@@ -11,18 +16,39 @@ export enum TransactionType {
 }
 
 export class CreateTransactionDto {
-  @IsEnum(TransactionType)
-  type!: TransactionType;
-
   @IsNumber()
   amount!: number;
 
-  @IsUUID()
-  wallet_id!: string;
+  @IsEnum(TransactionType)
+  type!: TransactionType;
 
   @IsString()
   reference!: string;
 
+  @IsUUID()
+  wallet_id!: string; // The internal ledger account ID
+
   @IsString()
-  description!: string;
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
+  sender_address?: string; // Source
+
+  @IsString()
+  @IsOptional()
+  beneficiary_address?: string; // Destination
+
+  @IsString()
+  @IsOptional()
+  txn_hash?: string; // External Reference/Hash
+
+  @IsString()
+  @IsOptional()
+  payment_method?: string;
+
+  @IsString()
+  @IsOptional()
+  receipt_url?: string;
 }
