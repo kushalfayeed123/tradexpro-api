@@ -8,6 +8,14 @@ import {
 } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 
+interface InvestmentWithPlan {
+  id: string;
+  principal: number;
+  accrued_return: number;
+  status: string;
+  investment_plans: { name: string }; // Notice this is an object, not an array
+}
+
 @Injectable()
 export class OverviewService {
   constructor(@Inject('SUPABASE_CLIENT') private supabase: SupabaseClient) {}
@@ -27,7 +35,7 @@ export class OverviewService {
       const ledgerBalance = walletView?.balance || 0;
 
       // 2. Get Active Investments (Locked Capital)
-      const { data: investments, error: invError } = await this.supabase
+      const { data, error: invError } = await this.supabase
         .from('investments')
         .select(
           `
@@ -35,11 +43,10 @@ export class OverviewService {
           principal, 
           accrued_return, 
           status,
-          investment_plans (name)
-        `,
+          investment_plans!inner (name)        `,
         )
-        .eq('user_id', userId)
-        .eq('status', 'active');
+        .eq('user_id', userId);
+      const investments = data as unknown as InvestmentWithPlan[];
 
       if (invError) throw invError;
 
@@ -67,7 +74,7 @@ export class OverviewService {
         .eq('created_by', userId)
         .order('created_at', { ascending: false })
         .limit(5);
-
+      console.log(investments);
       return {
         total_net_worth: totalNetWorth,
         ledger_balance: ledgerBalance,
@@ -78,9 +85,10 @@ export class OverviewService {
         active_portfolio:
           investments?.map((inv) => ({
             id: inv.id,
-            plan_name: inv.investment_plans[0].name,
+            plan_name: inv.investment_plans.name,
             capital: inv.principal,
             profit: inv.accrued_return,
+            status: inv.status,
           })) || [],
         recent_activity:
           transactions?.map((tx) => ({

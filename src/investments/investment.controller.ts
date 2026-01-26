@@ -16,7 +16,7 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 import { CreateInvestmentDto } from './dtos/create-investment.dto';
 import { InvestmentsService } from './investment.service';
 import { UpdateAccruedReturnDto } from './dtos/update-accrued-returns.dto';
-import { RequireKyc } from 'src/kyc/kyc.decorator';
+// import { RequireKyc } from 'src/kyc/kyc.decorator';
 import { KycGuard } from 'src/kyc/guards/kyc.guard';
 
 @UseGuards(JwtAuthGuard)
@@ -25,7 +25,7 @@ export class InvestmentsController {
   constructor(private readonly service: InvestmentsService) {}
 
   @UseGuards(KycGuard)
-  @RequireKyc(1)
+  // @RequireKyc(1)
   @Post()
   create(@Req() req: any, @Body() dto: CreateInvestmentDto) {
     return this.service.create(req.user.id, dto);
