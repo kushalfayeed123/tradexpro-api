@@ -5,10 +5,18 @@ import { TransactionsService } from './transactions.service';
 import { TransactionsController } from './transactions.controller';
 import { LedgerService } from 'src/ledger/ledger.service';
 import { KycService } from 'src/kyc/kyc.service';
+import { NotificationService } from 'src/notifications/notification.service';
+import { EmailTemplate } from 'src/helpers/email-template.helper';
 
 @Module({
   imports: [SupabaseModule],
   controllers: [TransactionsController],
-  providers: [TransactionsService, LedgerService, KycService],
+  providers: [
+    TransactionsService,
+    LedgerService,
+    KycService,
+    NotificationService,
+    EmailTemplate,
+  ],
 })
 export class TransactionsModule {}

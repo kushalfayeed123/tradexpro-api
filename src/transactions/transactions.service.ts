@@ -8,12 +8,14 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { LedgerService } from 'src/ledger/ledger.service';
 import { getPaginationRange } from 'src/pagination.helper';
+import { NotificationService } from 'src/notifications/notification.service';
 
 @Injectable()
 export class TransactionsService {
   constructor(
     @Inject('SUPABASE_CLIENT') private supabase,
     private readonly ledger: LedgerService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(userId: string, dto: CreateTransactionDto) {
@@ -98,21 +100,32 @@ export class TransactionsService {
   }
 
   async approveTransaction(adminId: string, transactionId: string) {
-    const tx = await this.getTransaction(transactionId);
+    // 1. Fetch transaction with user email joined
+    const { data: tx, error: fetchError } = await this.supabase
+      .from('transactions')
+      .select(
+        `
+        *,
+        user:users!transactions_created_by_fkey (
+          email,
+          profile:profiles (first_name)
+        )
+      `,
+      )
+      .eq('id', transactionId)
+      .single();
 
+    if (fetchError || !tx)
+      throw new BadRequestException('Transaction not found');
     if (tx.status !== 'pending')
       throw new BadRequestException('Transaction already processed');
 
     const userWallet = await this.ledger.getUserWalletAccount(tx.created_by);
-    if (!userWallet) throw new BadRequestException('User wallet not found');
-
     const systemWallet = await this.getSystemFundingAccount();
-    if (!systemWallet)
-      throw new BadRequestException('System funding account not found');
 
+    // 2. Execute Ledger Transfer
     switch (tx.type) {
       case 'deposit':
-        // system → user
         await this.ledger.transfer(
           tx.id,
           systemWallet.id,
@@ -120,9 +133,7 @@ export class TransactionsService {
           tx.amount,
         );
         break;
-
       case 'withdrawal':
-        // user → system
         await this.ledger.transfer(
           tx.id,
           userWallet.id,
@@ -130,13 +141,11 @@ export class TransactionsService {
           tx.amount,
         );
         break;
-
       default:
-        throw new BadRequestException(
-          `Unsupported transaction type: ${tx.type}`,
-        );
+        throw new BadRequestException(`Unsupported type: ${tx.type}`);
     }
 
+    // 3. Update Status
     await this.supabase
       .from('transactions')
       .update({
@@ -146,12 +155,45 @@ export class TransactionsService {
       })
       .eq('id', transactionId);
 
+    // 4. Send Notification
+    const firstName = tx.user?.profile?.first_name || 'Investor';
+    const emailSubject = `Transaction Approved: ${tx.reference}`;
+    const emailContent = `
+      <h3>Hello ${firstName},</h3>
+      <p>Your <b>${tx.type}</b> request of <b>$${tx.amount.toLocaleString()}</b> has been successfully approved.</p>
+      <p>The funds are now reflected in your ledger balance.</p>
+      <p>Reference: <code>${tx.reference}</code></p>
+    `;
+
+    // Fire and forget email (don't block the response)
+    this.notificationService
+      .enqueueEmail(tx.created_by, tx.user.email, emailSubject, emailContent)
+      .catch(console.error);
+
     return { status: 'approved' };
   }
 
-  // --- Reject transaction ---
   async rejectTransaction(adminId: string, transactionId: string) {
-    const { data, error } = await this.supabase
+    // 1. Fetch transaction with user details
+    const { data: tx, error: fetchError } = await this.supabase
+      .from('transactions')
+      .select(
+        `
+        *,
+        user:users!transactions_created_by_fkey (
+          email,
+          profile:profiles (first_name)
+        )
+      `,
+      )
+      .eq('id', transactionId)
+      .single();
+
+    if (fetchError || !tx)
+      throw new BadRequestException('Transaction not found');
+
+    // 2. Update Status
+    const { error: updateError } = await this.supabase
       .from('transactions')
       .update({
         status: 'rejected',
@@ -159,12 +201,24 @@ export class TransactionsService {
         approved_at: new Date(),
       })
       .eq('id', transactionId)
-      .eq('status', 'pending')
-      .select()
-      .maybeSingle();
+      .eq('status', 'pending');
 
-    if (error || !data)
+    if (updateError)
       throw new BadRequestException('Unable to reject transaction');
+
+    // 3. Send Notification
+    const firstName = tx.user?.profile?.first_name || 'Investor';
+    const emailSubject = `Transaction Declined: ${tx.reference}`;
+    const emailContent = `
+      <h3>Hello ${firstName},</h3>
+      <p>We regret to inform you that your <b>${tx.type}</b> request of <b>$${tx.amount.toLocaleString()}</b> was declined.</p>
+      <p>If you have any questions regarding this decision, please contact our support team.</p>
+      <p>Reference: <code>${tx.reference}</code></p>
+    `;
+
+    this.notificationService
+      .enqueueEmail(tx.created_by, tx.user.email, emailSubject, emailContent)
+      .catch(console.error);
 
     return { status: 'rejected' };
   }
