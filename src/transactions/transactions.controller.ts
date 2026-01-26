@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 // src/transactions/transactions.controller.ts
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/auth.guard';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dtos/create-transaction.dto';
@@ -20,7 +28,7 @@ export class TransactionsController {
   }
 
   @Get()
-  list(@Req() req) {
-    return this.service.list(req.user.id);
+  list(@Req() req, @Query() query: any) {
+    return this.service.list(req.user.id, query);
   }
 }

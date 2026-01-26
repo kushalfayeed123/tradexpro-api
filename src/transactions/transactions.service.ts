@@ -55,18 +55,48 @@ export class TransactionsService {
     return data;
   }
 
-  async list(userId: string) {
-    const { data: wallet } = await this.supabase
+  async list(userId: string, query: any) {
+    const { page = 1, limit = 10, type, status, search } = query;
+    const { from, to } = getPaginationRange(page, limit);
+
+    // 1. Get the wallet ID
+    const { data: wallet, error: walletError } = await this.supabase
       .from('ledger_accounts')
       .select('id')
       .eq('owner_id', userId)
       .single();
 
-    return this.supabase
+    if (walletError || !wallet) throw new Error('Wallet not found');
+
+    // 2. Build the query with count enabled
+    let supabaseQuery = this.supabase
       .from('transactions')
-      .select('*')
-      .eq('wallet_id', wallet.id)
-      .order('created_at', { ascending: false });
+      .select('*', { count: 'exact' }) // Critical for pagination meta
+      .eq('wallet_id', wallet.id);
+
+    // 3. Apply Filters
+    if (type && type !== 'all') supabaseQuery = supabaseQuery.eq('type', type);
+    if (status && status !== 'all')
+      supabaseQuery = supabaseQuery.eq('status', status);
+    if (search)
+      supabaseQuery = supabaseQuery.ilike('description', `%${search}%`);
+
+    // 4. Apply Pagination & Ordering
+    const { data, count, error } = await supabaseQuery
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
+
+    return {
+      data: data || [],
+      meta: {
+        total: count || 0,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil((count || 0) / limit),
+      },
+    };
   }
 
   // --- Helper: Fetch transaction by ID ---
