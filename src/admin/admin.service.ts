@@ -39,6 +39,7 @@ export class AdminService {
       .from('deposit_methods')
       .update({ ...dto, updated_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('status', 'active')
       .select()
       .single();
 

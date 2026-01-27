@@ -74,7 +74,7 @@ export class NotificationService {
     try {
       const htmlPayload = this.emailTemplate.getEmailWrapper(content);
       const response = await this.resend.emails.send({
-        from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+        from: process.env.EMAIL_FROM || 'support@prosperafinwealth.com',
         to: email,
         subject,
         html: htmlPayload,
