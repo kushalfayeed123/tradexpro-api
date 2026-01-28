@@ -56,7 +56,7 @@ export class EmailTemplate {
         <div class="wrapper">
           <div class="container">
             <div class="header">
-              <h1 class="logo-text">TOP<span style="color: #38BDF8;">EQUITY5</span></h1>
+              <h1 class="logo-text">ProsperaFin<span style="color: #38BDF8;">Wealth</span></h1>
             </div>
             <div class="content">
               ${content}
