@@ -42,7 +42,7 @@ export class NotificationController {
     },
   ) {
     const code = await this.service.generateOTP(body.userId, body.type);
-    const smsMessage = `Your TopEquity security code is: ${code}. Valid for 10 minutes.`;
+    const smsMessage = `Your ProsperFinWealth security code is: ${code}. Valid for 10 minutes.`;
     const emailHtml = this.emailTemplate.otp(code);
 
     this.service.sendSMS(body.userId, body.phone, smsMessage).catch((err) => {

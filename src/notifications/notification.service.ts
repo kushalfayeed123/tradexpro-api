@@ -234,14 +234,14 @@ export class NotificationService {
     type: string,
   ) {
     const code = await this.generateOTP(userId, type);
-    const message = `Your TopEquity security code is: ${code}. Valid for 10 minutes.`;
-    await this.sendSMS(userId, recipientNumber, message);
+    const message = `Your ProsperaFinWealth security code is: ${code}. Valid for 10 minutes.`;
     await this.sendEmail(
       userId,
       recipientemail,
       'Verification Code',
       this.emailTemplate.otp(code),
     );
+    await this.sendSMS(userId, recipientNumber, message);
   }
 
   /**
