@@ -21,7 +21,7 @@ export class EmailTemplate {
    */
   welcome(firstName: string) {
     return `
-      <h2>Welcome to TopEquity5, ${firstName}!</h2>
+      <h2>Welcome to ProsperaFinWealth, ${firstName}!</h2>
       <p>Your account has been successfully verified. You now have full access to our investment terminal.</p>
       <p>Start by exploring our current investment plans to begin growing your portfolio.</p>
       <div style="text-align: center;">
@@ -62,11 +62,11 @@ export class EmailTemplate {
               ${content}
               <hr />
               <p style="font-size: 13px; color: #94A3B8; text-align: center;">
-                This is an automated security notification from TopEquity5. 
+                This is an automated security notification from ProsperFinWealth. 
               </p>
             </div>
             <div class="footer">
-              &copy; ${new Date().getFullYear()} TopEquity5 Inc.
+              &copy; ${new Date().getFullYear()} ProsperaFinWealth Inc.
             </div>
           </div>
         </div>

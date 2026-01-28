@@ -39,7 +39,6 @@ export class AdminService {
       .from('deposit_methods')
       .update({ ...dto, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('status', 'active')
       .select()
       .single();
 
@@ -62,7 +61,7 @@ export class AdminService {
   async findActive() {
     const { data, error } = await this.supabase
       .from('deposit_methods')
-      .select('id, asset_name, network, wallet_address, instructions')
+      .select('*')
       .eq('is_active', true);
 
     if (error) throw new Error(error.message);
