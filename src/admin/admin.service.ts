@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // src/deposit-methods/deposit-methods.service.ts
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { CreateDepositMethodDto } from './dtos/deposit-method.dto';
 
@@ -65,6 +70,15 @@ export class AdminService {
       .eq('is_active', true);
 
     if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async getDashboardSummary() {
+    const { data, error } = await this.supabase.rpc(
+      'get_admin_dashboard_stats',
+    );
+
+    if (error) throw new BadRequestException(error.message);
     return data;
   }
 }

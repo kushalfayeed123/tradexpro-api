@@ -66,7 +66,7 @@ export class KycController {
    * ADMIN: Review KYC
    */
   @UseGuards(AdminGuard)
-  @Post(':kycId/review')
+  @Post('admin/:kycId/review')
   async review(
     @Req() req: any,
     @Param('kycId') kycId: string,
@@ -95,5 +95,10 @@ export class KycController {
   @Get(':id')
   async getUserKycRecord(@Req() req: any, @Param('id') id: string) {
     return this.kycService.getUserKyc(id);
+  }
+  @UseGuards(AdminGuard)
+  @Get('/admin/pending')
+  async getpendingKycRecord() {
+    return this.kycService.listAllKyc();
   }
 }

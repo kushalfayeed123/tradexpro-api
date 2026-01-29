@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 // src/deposit-methods/deposit-methods.controller.ts
 import {
   Controller,
@@ -7,11 +8,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateDepositMethodDto } from './dtos/deposit-method.dto';
+import { AdminGuard } from 'src/auth/guards/admin.guard';
+import { JwtAuthGuard } from 'src/auth/guards/auth.guard';
 
-@Controller('settings')
+@UseGuards(JwtAuthGuard)
+@Controller('admin')
 export class AdminController {
   constructor(private readonly service: AdminService) {}
 
@@ -41,5 +46,11 @@ export class AdminController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
+  }
+
+  @UseGuards(AdminGuard) // Ensure you have an AdminGuard protecting this!
+  @Get('/dashboard/summary')
+  async getSummary() {
+    return await this.service.getDashboardSummary();
   }
 }

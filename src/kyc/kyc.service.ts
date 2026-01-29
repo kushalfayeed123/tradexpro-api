@@ -160,8 +160,16 @@ export class KycService {
   async listAllKyc() {
     const { data, error } = await this.supabase
       .from('kyc_records')
-      .select('*, documents:kyc_documents(*)')
+      .select(
+        `
+      *,
+      user:users!kyc_records_user_fkey(email),
+      documents:kyc_documents(*)
+    `,
+      )
+      .eq('status', 'pending_review')
       .order('created_at', { ascending: false });
+
     return { data, error };
   }
 
