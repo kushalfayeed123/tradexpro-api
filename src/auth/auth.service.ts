@@ -201,7 +201,7 @@ export class AuthService {
     await this.notificationService.enqueueEmail(
       userId,
       user.email,
-      'Welcome to TopEquity!',
+      'Welcome to ProsperaFinWealth!',
       welcomeHtml,
     );
 
