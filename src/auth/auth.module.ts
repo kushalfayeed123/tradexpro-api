@@ -7,6 +7,7 @@ import { SupabaseModule } from '../supabase/supabase.module';
 import { AdminGuard } from './guards/admin.guard';
 import { EmailTemplate } from 'src/helpers/email-template.helper';
 import { NotificationService } from 'src/notifications/notification.service';
+import { PromotionService } from 'src/promotion/promotion.service';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { NotificationService } from 'src/notifications/notification.service';
     AdminGuard,
     EmailTemplate,
     NotificationService,
+    PromotionService,
   ],
   exports: [PassportModule, JwtStrategy],
 })

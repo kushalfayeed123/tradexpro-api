@@ -34,6 +34,8 @@ export class LedgerService {
       p_amount: amount,
     });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 }

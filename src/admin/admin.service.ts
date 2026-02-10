@@ -69,7 +69,10 @@ export class AdminService {
       .select('*')
       .eq('is_active', true);
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
     return data;
   }
 

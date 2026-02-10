@@ -9,7 +9,7 @@ import {
 
 export class RegisterDto {
   /* =========================
-     AUTH
+      AUTH
   ========================= */
 
   @IsEmail()
@@ -21,7 +21,7 @@ export class RegisterDto {
   password!: string;
 
   /* =========================
-     PROFILE
+      PROFILE
   ========================= */
 
   @IsString()
@@ -35,11 +35,19 @@ export class RegisterDto {
   lastName!: string;
 
   @IsOptional()
-  @IsPhoneNumber() // supports international numbers
+  @IsPhoneNumber()
   phone?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(56)
   country?: string;
+
+  /* =========================
+      REFERRAL
+  ========================= */
+
+  @IsOptional()
+  @IsString()
+  referralCode?: string;
 }

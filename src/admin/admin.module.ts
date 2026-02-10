@@ -7,6 +7,7 @@ import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { NotificationService } from 'src/notifications/notification.service';
 import { EmailTemplate } from 'src/helpers/email-template.helper';
+import { PromotionService } from 'src/promotion/promotion.service';
 
 @Module({
   imports: [SupabaseModule, LedgerModule],
@@ -16,6 +17,7 @@ import { EmailTemplate } from 'src/helpers/email-template.helper';
     AdminService,
     NotificationService,
     EmailTemplate,
+    PromotionService,
   ],
   exports: [TransactionsService],
 })

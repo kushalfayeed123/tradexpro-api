@@ -36,7 +36,7 @@ export class UsersController {
       .select(
         `
         id, email, role, created_at, is_verified,
-        profile:profiles (first_name, last_name, phone, country)
+        profile:profiles!user_id (first_name, last_name, phone, country, referral_code)
     `,
       )
       .eq('id', userId)
@@ -45,9 +45,7 @@ export class UsersController {
     if (userError) throw new InternalServerErrorException(userError.message);
     if (!user) throw new UnauthorizedException('User not found in database.');
 
-    const profile = Array.isArray(user.profile)
-      ? user.profile[0]
-      : user.profile;
+    const profile = user.profile;
     // 2️⃣ Wallet account
     const { data: walletAccount } = await this.supabase
       .from('ledger_accounts')

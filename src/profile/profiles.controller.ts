@@ -20,6 +20,7 @@ export class ProfilesController {
 
   @Get('me')
   async getProfile(@Req() req) {
+    console.log('request', req);
     const { data } = await this.supabase
       .from('profiles')
       .select('*')

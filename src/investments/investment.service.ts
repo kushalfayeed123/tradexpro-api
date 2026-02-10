@@ -8,12 +8,14 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { LedgerService } from '../ledger/ledger.service';
 import { CreateInvestmentDto } from './dtos/create-investment.dto';
 import { UpdateAccruedReturnDto } from './dtos/update-accrued-returns.dto';
+import { PromotionService } from 'src/promotion/promotion.service';
 
 @Injectable()
 export class InvestmentsService {
   constructor(
     @Inject('SUPABASE_CLIENT') private supabase: SupabaseClient,
     private ledger: LedgerService,
+    private promotionService: PromotionService,
   ) {}
 
   async create(userId: string, dto: CreateInvestmentDto) {
@@ -106,6 +108,8 @@ export class InvestmentsService {
       .from('investments')
       .update({ status: 'active' })
       .eq('id', investment.id);
+
+    await this.promotionService.checkReferralMilestone(userId);
 
     return investment;
   }

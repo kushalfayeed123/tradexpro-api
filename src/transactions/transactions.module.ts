@@ -7,6 +7,7 @@ import { LedgerService } from 'src/ledger/ledger.service';
 import { KycService } from 'src/kyc/kyc.service';
 import { NotificationService } from 'src/notifications/notification.service';
 import { EmailTemplate } from 'src/helpers/email-template.helper';
+import { PromotionService } from 'src/promotion/promotion.service';
 
 @Module({
   imports: [SupabaseModule],
@@ -17,6 +18,7 @@ import { EmailTemplate } from 'src/helpers/email-template.helper';
     KycService,
     NotificationService,
     EmailTemplate,
+    PromotionService,
   ],
 })
 export class TransactionsModule {}

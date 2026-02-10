@@ -9,6 +9,7 @@ import { CreateTransactionDto } from './dtos/create-transaction.dto';
 import { LedgerService } from 'src/ledger/ledger.service';
 import { getPaginationRange } from 'src/pagination.helper';
 import { NotificationService } from 'src/notifications/notification.service';
+import { PromotionService } from 'src/promotion/promotion.service';
 
 @Injectable()
 export class TransactionsService {
@@ -16,6 +17,7 @@ export class TransactionsService {
     @Inject('SUPABASE_CLIENT') private supabase,
     private readonly ledger: LedgerService,
     private readonly notificationService: NotificationService,
+    private readonly promotionService: PromotionService,
   ) {}
 
   async create(userId: string, dto: CreateTransactionDto) {
@@ -138,15 +140,17 @@ export class TransactionsService {
         *,
         user:users!transactions_created_by_fkey (
           email,
-          profile:profiles (first_name)
+          profile:profiles!profiles_user_id_fkey (first_name)
         )
       `,
       )
       .eq('id', transactionId)
       .single();
 
-    if (fetchError || !tx)
+    if (fetchError || !tx) {
+      console.log(fetchError, tx);
       throw new BadRequestException('Transaction not found');
+    }
     if (tx.status !== 'pending')
       throw new BadRequestException('Transaction already processed');
 
@@ -212,7 +216,7 @@ export class TransactionsService {
         *,
         user:users!transactions_created_by_fkey (
           email,
-          profile:profiles (first_name)
+          profile:profiles!user_id (first_name)
         )
       `,
       )
@@ -294,7 +298,7 @@ export class TransactionsService {
       investor:users!transactions_created_by_fkey (
         id, 
         email, 
-        profile:profiles (first_name, last_name)
+        profile:profiles!user_id (first_name, last_name)
       )
     `,
       { count: 'exact' },

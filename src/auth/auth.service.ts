@@ -14,6 +14,7 @@ import {
 import { RegisterDto } from './dtos/register.dto';
 import { NotificationService } from 'src/notifications/notification.service';
 import { EmailTemplate } from 'src/helpers/email-template.helper';
+import { PromotionService } from 'src/promotion/promotion.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     @Inject('SUPABASE_CLIENT') private supabase,
     private notificationService: NotificationService,
     private emailTemplate: EmailTemplate,
+    private promotionService: PromotionService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -53,6 +55,30 @@ export class AuthService {
         throw new InternalServerErrorException('Failed to create user record');
       }
 
+      // --- REFERRAL SYSTEM LOGIC START ---
+
+      // Generate a unique referral code for the NEW user (e.g., ALEX-X821)
+      const myNewReferralCode = this.promotionService.generateReferralCode(
+        dto.firstName,
+      );
+
+      // Check if this new user was referred by an existing user
+      let referrerId = null;
+      if (dto.referralCode) {
+        const { data: refProfile } = await this.supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('referral_code', dto.referralCode.toUpperCase())
+          .single();
+
+        // Ensure the user isn't trying to refer themselves (though common sense, fintech bots try this)
+        if (refProfile && refProfile.user_id !== userId) {
+          referrerId = refProfile.user_id;
+        }
+      }
+
+      // --- REFERRAL SYSTEM LOGIC END ---
+
       const { error: profileError } = await this.supabase
         .from('profiles')
         .insert({
@@ -61,6 +87,8 @@ export class AuthService {
           last_name: dto.lastName,
           phone: dto.phone ?? null,
           country: dto.country ?? null,
+          referral_code: myNewReferralCode, // Their code for others
+          referred_by: referrerId,
         });
 
       if (profileError) {
@@ -71,12 +99,20 @@ export class AuthService {
         throw new InternalServerErrorException('Failed to create user profile');
       }
 
+      if (referrerId) {
+        await this.promotionService.handleSignupReferral(
+          userId,
+          dto.referralCode ?? '',
+        );
+      }
+
       const { error: ledgerError } = await this.supabase
         .from('ledger_accounts')
         .insert({
           owner_type: 'user',
           owner_id: userId,
           name: 'wallet',
+          currency: 'USD',
         });
 
       if (ledgerError) {
@@ -141,9 +177,9 @@ export class AuthService {
     }
     const { data: user } = await this.supabase
       .from('users')
-      .select('email, profile:profiles(first_name)')
+      .select('email, profile:profiles!profiles_user_id_fkey(first_name)')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     // 2. Mark as used so it can't be reused (Replay Attack protection)
     await this.supabase
