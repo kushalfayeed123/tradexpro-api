@@ -11,13 +11,14 @@ import { JwtAuthGuard } from 'src/auth/guards/auth.guard';
 export class PromotionController {
   constructor(private readonly promoService: PromotionService) {}
 
-  // INVESTOR ENDPOINT: Check if a coupon is valid before investing
   @Post('coupons/validate')
   async validate(@Body() dto: ValidateCouponDto) {
     return this.promoService.validateCoupon(dto);
   }
-
-  // promotion.controller.ts
+  @Get('referral-stats/:userId')
+  async getStats(@Param('userId') userId: string) {
+    return await this.promoService.getReferralStats(userId);
+  }
 
   @Post('admin/coupons')
   @UseGuards(AdminGuard)
@@ -30,16 +31,15 @@ export class PromotionController {
     };
   }
 
-  // ADMIN ENDPOINT: View all referral activity
   @Get('admin/referrals')
   @UseGuards(AdminGuard)
   async getAllReferrals() {
     return await this.promoService.getAllReferrals();
-    // Return list of all referrals with joined user profiles
   }
 
-  @Get('referral-stats/:userId')
-  async getStats(@Param('userId') userId: string) {
-    return await this.promoService.getReferralStats(userId);
+  @Get('admin/stats')
+  @UseGuards(AdminGuard)
+  async getGlobalStats() {
+    return await this.promoService.getAdminReferralStats();
   }
 }
