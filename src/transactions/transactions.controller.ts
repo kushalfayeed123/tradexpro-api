@@ -18,8 +18,7 @@ import { CreateTransactionDto } from './dtos/create-transaction.dto';
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly service: TransactionsService) {}
-  // @UseGuards(KycGuard)
-  // @RequireKyc(1)
+
   @Post()
   create(@Req() req, @Body() dto: CreateTransactionDto) {
     return this.service.create(req.user.id, dto);
