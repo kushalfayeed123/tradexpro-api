@@ -30,11 +30,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         cache: true,
         rateLimit: true,
         jwksRequestsPerMinute: 5,
-        jwksUri: `https://bswhlzqnuccefgexlbfb.supabase.co/auth/v1/.well-known/jwks.json`,
+        jwksUri: `https://emuhqkodchducvqlvmzr.supabase.co/auth/v1/.well-known/jwks.json`,
       }),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       audience: 'authenticated',
-      issuer: `https://bswhlzqnuccefgexlbfb.supabase.co/auth/v1`,
+      issuer: `https://emuhqkodchducvqlvmzr.supabase.co/auth/v1`,
       algorithms: ['ES256'], // Match the algorithm from your Supabase dashboard
     });
   }

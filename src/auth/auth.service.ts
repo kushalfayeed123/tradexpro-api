@@ -46,7 +46,7 @@ export class AuthService {
         id: userId,
         email: dto.email,
         role: 'investor',
-        is_verified: false,
+        is_verified: true,
       });
 
       if (userError) {
@@ -126,33 +126,32 @@ export class AuthService {
         );
       }
 
-      let otpSent = false;
-      try {
-        await this.notificationService.requestOTP(
-          userId,
-          dto.email,
-          dto.phone ?? '',
-          'verification',
-        );
-        otpSent = true;
-      } catch (otpError) {
-        this.logger.error(`OTP sending failed for ${userId}: ${otpError}`);
-      }
+      // let otpSent = false;
+      // try {
+      //   await this.notificationService.requestOTP(
+      //     userId,
+      //     dto.email,
+      //     dto.phone ?? '',
+      //     'verification',
+      //   );
+      //   otpSent = true;
+      // } catch (otpError) {
+      //   this.logger.error(`OTP sending failed for ${userId}: ${otpError}`);
+      // }
 
-      if (!otpSent) {
-        return {
-          success: false, // Explicitly tell frontend it's not a full success
-          message:
-            'Account created, but we failed to send the verification code. Please request a new one.',
-          userId,
-          requiresResend: true,
-        };
-      }
+      // if (!otpSent) {
+      //   return {
+      //     success: false, // Explicitly tell frontend it's not a full success
+      //     message:
+      //       'Account created, but we failed to send the verification code. Please request a new one.',
+      //     userId,
+      //     requiresResend: true,
+      //   };
+      // }
 
       return {
         success: true,
-        message:
-          'User registered successfully. Please check your email/phone for the OTP.',
+        message: 'User registered successfully.',
         userId,
       };
     } catch (error) {

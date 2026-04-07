@@ -18,33 +18,31 @@ export class UsersService {
     const { from, to } = getPaginationRange(page, limit);
 
     // 1. Primary Fetch: Users, Profiles, and KYC
-    // We remove the wallet join here to prevent the "Relationship not found" error
+    // NOTE: Using '!' to explicitly reference the column names for the join
     let qb = this.supabase.from('users').select(
       `
-    id,
-    email,
-    role,
-    is_verified,
-    created_at,
-    profile:profiles!profiles_user_id_fkey (
-      first_name, 
-      last_name, 
-      phone, 
-      country
-    ),
-    kyc:kyc_records!kyc_records_user_fkey (
-      status, 
-      level
-    )
-  `,
+      id,
+      email,
+      role,
+      is_verified,
+      created_at,
+      profile:profiles!user_id (
+        first_name, 
+        last_name, 
+        phone, 
+        country
+      ),
+      kyc:kyc_records!user_id (
+        status, 
+        level
+      )
+    `,
       { count: 'exact' },
     );
 
+    // Apply filters
     if (email) qb = qb.ilike('email', `%${email}%`);
     if (role) qb = qb.eq('role', role);
-    // if (kyc_status && kyc_status !== 'all') {
-    //   qb = qb.filter('kyc.status', 'eq', kyc_status);
-    // }
 
     const {
       data: users,
@@ -52,27 +50,33 @@ export class UsersService {
       count,
     } = await qb.order('created_at', { ascending: false }).range(from, to);
 
-    if (userError) throw new BadRequestException(userError.message);
+    if (userError) {
+      console.error('User Fetch Error:', userError);
+      throw new BadRequestException(userError.message);
+    }
+
     if (!users || users.length === 0) return { data: [], meta: { total: 0 } };
 
-    // 2. Secondary Fetch: Get Balances from the View for these specific IDs
+    // 2. Secondary Fetch: Get Balances from the View
     const userIds = users.map((u) => u.id);
     const { data: balances, error: balanceError } = await this.supabase
       .from('wallet_balances')
       .select('user_id, balance')
       .in('user_id', userIds);
 
-    // We don't throw if balances fail; we just default them to 0
-    if (balanceError)
-      console.error('Balance View Error:', balanceError.message);
+    if (balanceError) {
+      console.error('Wallet View Error:', balanceError.message);
+    }
 
     // 3. Format and Merge
     const formattedData = users.map((user) => {
+      // Supabase returns related data as an array or object depending on cardinality
       const rawKyc = Array.isArray(user.kyc) ? user.kyc[0] : user.kyc;
-      const kycData = rawKyc || { status: 'none', level: 0 };
-      const profileData = Array.isArray(user.profile)
+      const rawProfile = Array.isArray(user.profile)
         ? user.profile[0]
         : user.profile;
+
+      const kycData = rawKyc || { status: 'none', level: 0 };
       const walletData = balances?.find((b) => b.user_id === user.id);
 
       return {
@@ -81,14 +85,14 @@ export class UsersService {
         role: user.role,
         is_verified: user.is_verified,
         created_at: user.created_at,
-        profile: profileData,
+        profile: rawProfile,
         kyc: kycData,
-        full_name: profileData
-          ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() ||
+        full_name: rawProfile
+          ? `${rawProfile.first_name || ''} ${rawProfile.last_name || ''}`.trim() ||
             'No Name'
           : 'N/A',
         wallet: {
-          balance: walletData?.balance ?? 0,
+          balance: Number(walletData?.balance ?? 0),
         },
       };
     });
