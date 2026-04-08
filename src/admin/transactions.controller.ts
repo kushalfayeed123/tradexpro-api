@@ -64,7 +64,7 @@ export class AdminTransactionsController {
       adminId,
       dto.userId,
       dto.amount,
-      dto.description,
+      dto.description ?? 'Admin Update',
     );
   }
 }
