@@ -1,10 +1,4 @@
-import {
-  IsUUID,
-  IsNumber,
-  IsString,
-  IsNotEmpty,
-  MinLength,
-} from 'class-validator';
+import { IsUUID, IsNumber, IsString, IsNotEmpty } from 'class-validator';
 
 export class AdminUpdateBalanceDto {
   @IsUUID()
@@ -16,5 +10,5 @@ export class AdminUpdateBalanceDto {
   amount!: number; // e.g., 500 to add, -500 to subtract
 
   @IsString()
-  description: string; // Force a reason for the audit trail
+  description?: string; // Force a reason for the audit trail
 }
