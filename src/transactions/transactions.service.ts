@@ -364,7 +364,7 @@ export class TransactionsService {
         type: txType,
         status: 'approved',
         reference: `ADM-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        description: description || `Admin manual ${txType}`,
+        description: description || `System ${txType}`,
         created_by: userId,
         approved_by: adminId,
         approved_at: new Date(),
