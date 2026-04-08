@@ -16,7 +16,5 @@ export class AdminUpdateBalanceDto {
   amount!: number; // e.g., 500 to add, -500 to subtract
 
   @IsString()
-  @IsNotEmpty()
-  @MinLength(5)
-  description!: string; // Force a reason for the audit trail
+  description: string; // Force a reason for the audit trail
 }
