@@ -336,4 +336,67 @@ export class TransactionsService {
 
     return data; // Returns the JSON object directly
   }
+
+  async adminUpdateBalance(
+    adminId: string,
+    userId: string,
+    amount: number,
+    description: string,
+  ) {
+    const userWallet = await this.ledger.getUserWalletAccount(userId);
+    const systemWallet = await this.getSystemFundingAccount();
+
+    if (!userWallet || !systemWallet) {
+      throw new BadRequestException('Ledger accounts not initialized');
+    }
+
+    // Determine type based on existing schema constraints
+    const isPositive = amount > 0;
+    const txType = isPositive ? 'deposit' : 'withdrawal';
+    const absoluteAmount = Math.abs(amount);
+
+    // 1. Create the Transaction (Pre-approved)
+    const { data: tx, error: txError } = await this.supabase
+      .from('transactions')
+      .insert({
+        wallet_id: userWallet.id,
+        amount: absoluteAmount,
+        type: txType,
+        status: 'approved',
+        reference: `ADM-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        description: description || `Admin manual ${txType}`,
+        created_by: userId,
+        approved_by: adminId,
+        approved_at: new Date(),
+      })
+      .select()
+      .single();
+
+    if (txError) throw new BadRequestException(txError.message);
+
+    // 2. Execute Ledger Transfer
+    // If Deposit: System -> User
+    // If Withdrawal: User -> System
+    if (isPositive) {
+      await this.ledger.transfer(
+        tx.id,
+        systemWallet.id,
+        userWallet.id,
+        absoluteAmount,
+      );
+    } else {
+      await this.ledger.transfer(
+        tx.id,
+        userWallet.id,
+        systemWallet.id,
+        absoluteAmount,
+      );
+    }
+
+    return {
+      message: 'Balance updated successfully',
+      transactionId: tx.id,
+      action: txType,
+    };
+  }
 }
